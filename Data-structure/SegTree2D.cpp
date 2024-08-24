@@ -3,11 +3,14 @@ struct seg2d{
     vector<int>pos;
     vector<int>idm[maxn];
 
-    seg2d(int n, int m){
+    void init(int n, int m){
         st.resize(n * 4 + 1, vector<int>(m * 4 + 1));
+
+        prepare(1, 1, m);
+        build(1, 1, n);
     }
 
-    void init(int id, int l, int r){
+    void prepare(int id, int l, int r){
         pos.pb(id);
         for (int i = l; i <= r; i++)
             idm[i].pb(id);
@@ -17,8 +20,8 @@ struct seg2d{
 
         int mid = l + r >> 1;
 
-        init(id << 1, l, mid);
-        init(id << 1 | 1, mid + 1, r);
+        prepare(id << 1, l, mid);
+        prepare(id << 1 | 1, mid + 1, r);
     }
 
     void buildm(int id, int l, int r, int idn, int i){
@@ -109,4 +112,4 @@ struct seg2d{
             st[id][x] = __gcd(st[id << 1][x], st[id << 1 | 1][x]);
     }
 
-};
+}seg;
