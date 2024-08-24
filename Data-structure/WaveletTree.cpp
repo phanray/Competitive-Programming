@@ -11,10 +11,10 @@ struct WaveletTree {
 
     }
 
-    void build(int valL, int valR, int posL, int posR) {
+    void build(int posL, int posR) {
 
-        l = valL;
-        r = valR;
+        l = *min_element(a + posL, a + posR + 1);
+        r = *max_element(a + posL, a + posR + 1);
 
         if (l == r || posL > posR)
             return;
@@ -32,10 +32,10 @@ struct WaveletTree {
         }) - a - 1;
 
         childL = new WaveletTree;
-        childL->build(l, mid, posL, posMid);
+        childL->build(posL, posMid);
 
         childR = new WaveletTree;
-        childR->build(mid + 1, r, posMid + 1, posR);
+        childR->build(posMid + 1, posR);
 
     }
 
@@ -56,18 +56,18 @@ struct WaveletTree {
     }
 
     int cnt(int posL, int posR, int k) {
- 
+
         if (l > k || posL > posR)
             return 0;
- 
+
         if (r <= k)
             return posR - posL + 1;
         
         int cntL = prefix[posL - 1];
         int cntR = prefix[posR];
- 
+
         return childL->cnt(cntL + 1, cntR, k) + childR->cnt(posL - cntL, posR - cntR, k);
- 
+
     }
 
     int count(int posL, int posR, int k) {
@@ -80,7 +80,7 @@ struct WaveletTree {
 
         int cntL = prefix[posL - 1];
         int cntR = prefix[posR];
- 
+
         return childL->count(cntL + 1, cntR, k) + childR->count(posL - cntL, posR - cntR, k);
 
     }
