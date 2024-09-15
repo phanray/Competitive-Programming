@@ -1,46 +1,49 @@
-// Trie Tree
-
-struct TrieNode {
-
-    TrieNode *child[26];
-    int cnt;
-    TrieNode()
-    {
-
-        cnt = 0;
-        for (int i = 0; i < 26; i++)
-            child[i] = NULL;
-    }
-
-} *root = new TrieNode();
-
 struct Trie {
 
-    void Insert(string s) {
+    struct TrieNode {
 
-        TrieNode *Node = root;
-        int n = s.size();
+        int cnt, exist;
+        TrieNode *child[26];
 
-        for (int i = 0; i < n; i++) {
+        TrieNode(){
+            cnt = exist = 0;
 
-            if (Node->child[s[i] - 'a'] == NULL)
-                Node->child[s[i] - 'a'] = new TrieNode();
-            Node = Node->child[s[i] - 'a'];
+            for (int i = 0; i < 26; i++)
+                child[i] = NULL;
         }
 
-        Node->cnt++;
+    } *root = new TrieNode();
+
+    void add(string s) {
+        TrieNode *Node = root;
+
+        for (int i = 0; i < s.size(); i++) {
+            int c = s[i] - 'a';
+
+            if (Node->child[c] == NULL)
+                Node->child[c] = new TrieNode();
+
+            Node = Node->child[c];
+            Node->cnt++;
+        }
+
+        Node->exist++;
     }
 
-    void Find(string s) {
+    bool find(string s) {
 
         TrieNode *Node = root;
-        int n = s.size();
 
-        for (int i = 0; i < n; i++) {
+        for (int i = 0; i < s.size(); i++) {
+            int c = s[i] - 'a';
 
-            // if (Node->child[s[i]-'a']==NULL) return;
-            // Node = Node->child[s[i]-'a'];
+            if (Node->child[c] == NULL)
+                return false;
+
+            Node = Node->child[c];
         }
+
+        return Node->exist;
     }
 
 } Trie;
