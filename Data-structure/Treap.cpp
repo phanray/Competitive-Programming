@@ -27,6 +27,41 @@ struct Treap{
             node->sz = 1 + sz(node->left) + sz(node->right);
     }
 
+    void heap(Node *node){
+        if (!node)
+            return;
+
+        Node *priority = node;
+
+        if (node->left && node->left->weight > priority->weight)
+            priority = node->left;
+
+        if (node->right && node->right->weight > priority->weight)
+            priority = node->right;
+
+        if (priority != node){
+            swap(node->weight, priority->weight);
+
+            heap(priority);
+        }
+    }
+
+    Node *build(int l, int r){
+        if (l > r)
+            return NULL;
+
+        int mid = l + r >> 1;
+        Node *node = new Node(a[mid]);
+
+        node->left = build(l, mid - 1);
+        node->right = build(mid + 1, r);
+
+        heap(node);
+        upd_sz(node);
+
+        return node;
+    }
+
     void push(Node *node){
         if (node && node->rev){
             node->rev = false;
@@ -71,50 +106,20 @@ struct Treap{
         upd_sz(node);
     }
 
-    // void add(Node *&node, Node *key){
-    //     if (!node)
-    //         node = key;
-    //     else if (key->weight > node->weight)
-    //         split(node, key->left, key->right, key->val), node = key;
-    //     else
-    //         add(node->val <= key->val ? node->right : node->left, key);
-
-    //     upd_sz(node);
-    // }
-
-    // void insert(type key){
-    //     add(root, new Node(key));
-    // }
-
-    // void del(Node *&node, type key){
-    //     if (node->val == key){
-    //         Node *t = node;
-    //         merge(node, node->left, node->right);
-    //         delete t;
-    //     }else 
-    //         del(key <= node->val ? node->left : node->right, key);
-
-    //     upd_sz(node);
-    // }
-
-    // void erase(type key){
-    //     del(root, key);
-    // }
-
     void insert(int i, type key){
         Node *t1, *t2;
 
-        split(root, t1, t2, i);
-        merge(root, t1, new Node(key));
+        split(root, t1, t2, i - 1);
+        merge(t1, t1, new Node(key));
         merge(root, t1, t2);
     }
 
     void erase(int i){
         Node *t1, *t2, *t3;
 
-        split(root, t1, t2, i);
-        split(t1, t1, t3, i - 1);
-        merge(root, t1, t2);
+        split(root, t1, t2, i - 1);
+        split(t2, t2, t3, 1);
+        merge(root, t1, t3);
     }
 
     void reverse(int l, int r){
@@ -127,19 +132,6 @@ struct Treap{
 
         merge(root, t1, t2);
         merge(root, root, t3);
-    }
-
-    void output(Node *node){
-        if (!node)  
-            return;
-
-        push(node);
-
-        output(node->left);
-
-        cout << node->val << ' ';
-
-        output(node->right);
     }
 
 }treap;
