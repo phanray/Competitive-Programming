@@ -22,7 +22,7 @@ struct Treap{
         return node ? node->sz : 0;
     }
 
-    void upd_sz (Node *node){
+    void upd_sz(Node *node){
         if (node)
             node->sz = 1 + sz(node->left) + sz(node->right);
     }
@@ -40,7 +40,7 @@ struct Treap{
         }
     }
 
-    void split(Node *node, Node *&left, Node *&right, int key){
+    void split(Node *node, Node *&left, Node *&right, type key){
         if (!node)
             return void(left = right = NULL);
 
