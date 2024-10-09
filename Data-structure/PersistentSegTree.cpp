@@ -1,73 +1,53 @@
-struct persistentSegTree {
+int cnt = 1;
 
-    int numNode;
+struct Node{
+    ll sum;
+    Node *left, *right;
 
-    persistentSegTree() {numNode = 1;}
+    Node(ll val) : sum(val), left(NULL), right(NULL){}
+    Node(Node *rs) : sum(rs->sum), left(rs->left), right(rs->right){}
+    Node(Node *l, Node *r){
+        left = l;
+        right = r;
+        sum = 0;
 
-    struct node {
-        
-        int leftID, rightID, sum;
-        node () {leftID = rightID = sum = 0;}
-        node(int leftID, int rightID, int sum) : leftID(leftID), rightID(rightID), sum(sum) {};
+        if (l)
+            sum += l->sum;
+        if (r)
+            sum += r->sum;
+    }
+} *root[maxn];
 
-    } S[20 * maxn];
-    
-    void build(int id, int l, int r) {
+struct persistentSeg{
+    Node *build(int l, int r){
+        if (l == r)
+            return new Node(a[l]);
 
-        if (l == r) {
+        int mid = l + r >> 1;
 
-            S[id] = node(0, 0, a[l]);
-            return;
-        }
-
-        int mid = (l + r) >> 1;
-        
-        S[id].leftID = ++numNode;
-        S[id].rightID = ++numNode;
-
-        build(S[id].leftID, l, mid);
-        build(S[id].rightID, mid + 1, r);
-
-        S[id].sum = S[S[id].leftID].sum + S[S[id].rightID].sum;
-
+        return new Node(build(l, mid), build(mid + 1, r));
     }
 
-    int update(int id, int l, int r, int p, int x) {
+    Node *update(Node *node, int l, int r, int v, int val){
+        if (l == r)
+            return new Node(val);
 
-        if (p < l || p > r)
-            return id;
+        int mid = l + r >> 1;
 
-        if (l == r) {
-
-            S[++numNode] = node(0, 0, x);
-            return numNode;
-        }
-
-        int mid = (l + r) >> 1;
-
-        int idL = update(S[id].leftID, l, mid, p, x);
-        int idR = update(S[id].rightID, mid + 1, r, p, x);
-        
-        numNode++;
-        S[numNode].leftID = idL;
-        S[numNode].rightID = idR;
-        S[numNode].sum = S[idL].sum + S[idR].sum;
-
-        return numNode;
-
+        if (v <= mid)
+            return new Node(update(node->left, l, mid, v, val), node->right);
+        return new Node(node->left, update(node->right, mid + 1, r, v, val));
     }
 
-    int get(int id, int l, int r, int u, int v) {
-
-        if (r < u || l > v)
+    ll get(Node *node, int l, int r, int u, int v){
+        if (l > v || r < u)
             return 0;
-        
+
         if (l >= u && r <= v)
-            return S[id].sum;
+            return node->sum;
 
-        int mid = (l + r) >> 1;
-        return get(S[id].leftID, l, mid, u, v) + get(S[id].rightID, mid + 1, r, u, v);
+        int mid = l + r >> 1;
 
+        return get(node->left, l, mid, u, v) + get(node->right, mid + 1, r, u, v);
     }
-
-} seg;
+} Seg;
