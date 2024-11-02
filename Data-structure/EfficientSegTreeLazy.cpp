@@ -5,7 +5,7 @@ struct SegTree{
         for (int i = n; i < n + n; ++i)
             t[i] = a[i - n + 1];
 
-        for (int i = n - 1; i > 1; --i)
+        for (int i = n - 1; i > 0; --i)
             t[i] = max(t[i << 1], t[i << 1 | 1]);
     }
 
