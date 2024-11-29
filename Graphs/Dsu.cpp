@@ -1,8 +1,8 @@
 struct Dsu{
-    int p[maxn], s[maxn], r[maxn];
+    int p[maxn], s[maxn];
 
     void init(int n){
-        for (int i = 1; i <= n; i++)
+        for (int i = 1; i <= n; ++i)
             p[i] = i, s[i] = 1;
     }
 
