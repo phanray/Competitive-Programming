@@ -1,79 +1,64 @@
-int w[maxn];
-vector<int>a[maxn];
-
 struct Hld{
-
-    int Par[maxn]; // parent
-    int Depth[maxn]; // do sau cua node
-    int Sz[maxn]; // kich thuoc cua cay con cho cac node
-    int Pos[maxn]; // vi tri trong mang cua node
-    int Arr[maxn]; // gia tri cua cac phan tu trong mang
-    int ChainID[maxn]; // ChainID[i]: Chain ma i nam trong 
-    int ChainTop[maxn]; // ChainTop[i]: Node dau tien trong chain i
-    int CurChain = 1, CurPos = 1;//dem chuoi,dem vi tri trong mang arr
-    int st[maxn * 4];
+    int par[maxn], h[maxn], sz[maxn], pos[maxn], arr[maxn], ChainId[maxn], ChainTop[maxn], st[maxn * 4], lz[maxn * 4];
+    int Chain = 1, cnt;
 
     void init(){
         dfs(1, 0);
-        hld(1, 0);
+        hld(1, 0, 1);
         build(1, 1, n);
     }
 
-    void dfs(int s, int p){
-        Sz[s] = 1;
+    void dfs(int u, int p){
+        sz[u] = 1;
 
-        for (int u: a[s]) {
-            if (u == p) 
+        for (auto v: e[u]){
+            if (v == p) 
                 continue;
             
-            Par[u] = s;
-            Depth[u] = Depth[s] + 1;
-            dfs(u, s);
-            Sz[s] += Sz[u];
+            par[v] = u;
+            h[v] = h[u] + 1;
+            dfs(v, u);
+            sz[u] += sz[v];
         }
     }
 
-    void hld(int s, int p){
-        if (!ChainTop[CurChain])
-            ChainTop[CurChain] = s;
-
-        ChainID[s] = CurChain;
-        Pos[s] = CurPos;
-        Arr[CurPos] = s;
-        CurPos++;
+    void hld(int u, int p, int top){
+        ChainTop[u] = top;
+        ChainId[u] = Chain;
+        pos[u] = ++cnt;
+        arr[cnt] = u;
 
         int nxt = 0;
-        for (int u: a[s])
-            if (u != p)
-                if (nxt == 0 || Sz[u] > Sz[nxt])
-                    nxt=u;
+        for (auto v: e[u])
+            if (v != p)
+                if (nxt == 0 || sz[v] > sz[nxt])
+                    nxt = v;
         
         if (nxt)
-            hld(nxt, s);
+            hld(nxt, u, top);
 
-        for (int u: a[s]) {
-            if (u != p && u != nxt){
-                CurChain++;
-                hld(u, s);
+        for (auto v: e[u]){
+            if (v != p && v != nxt){
+                ++Chain;
+                hld(v, u, v);
             }
         }
     }
 
     int Lca(int u, int v){
+        while (ChainId[u] != ChainId[v])
+            if (ChainId[u] > ChainId[v])
+                u = par[ChainTop[u]];
+            else v = par[ChainTop[v]];
 
-        while (ChainID[u] != ChainID[v])
-            if (ChainID[u] > ChainID[v])
-                u = Par[ChainTop[ChainID[u]]];
-            else v = Par[ChainTop[ChainID[v]]];
-
-        if (Depth[u] < Depth[v]) 
+        if (h[u] < h[v]) 
             return u;
         return v;
     }
 
     void build(int id, int l, int r){
         if (l == r){
-            st[id] = w[Arr[l]];
+            st[id] = w[arr[l]];
             return;
         }
         int mid = l + r >> 1;
@@ -81,23 +66,38 @@ struct Hld{
         build(id << 1, l, mid);
         build(id << 1 | 1, mid + 1, r);
 
-        st[id] = st[id << 1] ^ st[id << 1 | 1];
+        st[id] = st[id << 1] + st[id << 1 | 1];
     }
 
-    void update(int id, int l, int r, int i, int val){
-        if (l > i || r < i)
+    void lazy(int id, int l, int r, int mid){
+        if (!lz[id])
             return;
 
-        if (l == r){
-            st[id] = val;
+        st[id << 1] += lz[id] * (mid - l + 1);
+        st[id << 1 | 1] += lz[id] * (r - mid);
+
+        lz[id << 1] += lz[id];
+        lz[id << 1 | 1] += lz[id];
+
+        lz[id] = 0;
+    }
+
+    void update(int id, int l, int r, int u, int v, int val){
+        if (l > v || r < u)
+            return;
+
+        if (l >= u && r <= v){
+            st[id] += val * (r - l + 1);
+            lz[id] += val;
             return;
         }
         int mid = l + r >> 1;
+        lazy(id, l, r, mid);
 
-        update(id << 1, l, mid, i, val);
-        update(id << 1 | 1, mid + 1, r, i, val);
+        update(id << 1, l, mid, u, v, val);
+        update(id << 1 | 1, mid + 1, r, u, v, val);
 
-        st[id] = st[id << 1] ^ st[id << 1 | 1];
+        st[id] = st[id << 1] + st[id << 1 | 1];
     }
 
     int get(int id, int l, int r, int u, int v){
@@ -108,35 +108,42 @@ struct Hld{
             return st[id];
 
         int mid = l + r >> 1;
+        lazy(id, l, r, mid);
 
-        return get(id << 1, l, mid, u, v) ^ get(id << 1 | 1, mid + 1, r, u, v);
+        return get(id << 1, l, mid, u, v) + get(id << 1 | 1, mid + 1, r, u, v);
     }
 
-    void update(int x, int val){
-        update(1, 1, n, Pos[x], val);
+    void update(int u, int v, int val){
+        while (ChainId[u] != ChainId[v])
+            if (ChainId[u] > ChainId[v]){
+                update(1, 1, n, pos[ChainTop[u]], pos[u], val);
+
+                u = par[ChainTop[u]];
+            }else{
+                update(1, 1, n, pos[ChainTop[v]], pos[v], val);
+
+                v = par[ChainTop[v]];
+            }
     }
 
     int query(int u, int v){
-        int lca = Lca(u, v), ans = 0;
+        int ans = 0;
 
-        while(ChainID[u] != ChainID[lca]){
-            ans ^= get(1, 1, n, Pos[ChainTop[ChainID[u]]], Pos[u]);
+        while (ChainId[u] != ChainId[v])
+            if (ChainId[u] > ChainId[v]){
+                ans += get(1, 1, n, pos[ChainTop[u]], pos[u]);
 
-            u = Par[ChainTop[ChainID[u]]];
-        }
+                u = par[ChainTop[u]];
+            }else{
+                ans += get(1, 1, n, pos[ChainTop[v]], pos[v]);
+                
+                v = par[ChainTop[v]];
+            }
 
-        while(ChainID[v] != ChainID[lca]) {
-            ans ^= get(1, 1, n, Pos[ChainTop[ChainID[v]]], Pos[v]);
-            
-            v = Par[ChainTop[ChainID[v]]];
-        }
-
-        if(Depth[u] < Depth[v]){
-            ans ^= get(1, 1, n, Pos[u], Pos[v]);
-        }
-        else {
-            ans ^= get(1, 1, n, Pos[v], Pos[u]);
-        }
+        if(h[u] < h[v])
+            ans += get(1, 1, n, pos[u], pos[v]);
+        else 
+            ans += get(1, 1, n, pos[v], pos[u]);
 
         return ans;
     }
