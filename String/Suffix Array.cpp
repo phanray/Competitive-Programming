@@ -86,6 +86,12 @@ struct SuffixArray{
         //         _lcp[i][j] = min(_lcp[i][j - 1], _lcp[i + (1 << (j - 1))][j - 1]);
     }
 
+    // int get(int l, int r){
+    //     int k = __lg(r - l);
+
+    //     return min(_lcp[l][k], _lcp[r - (1 << k)][k]);
+    // }
+
     // int Lcp(int l, int r){
     //     if (l == r)
     //         return n - l;
@@ -96,8 +102,6 @@ struct SuffixArray{
     //     if (l > r)
     //         swap(l, r);
 
-    //     int k = __lg(--r - l + 1);
-
-    //     return min(_lcp[l][k], _lcp[r - (1 << k) + 1][k]);
+    //     return get(l, r);
     // }
 }suff;
