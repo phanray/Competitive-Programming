@@ -29,7 +29,7 @@ struct Matrix{
         for (int i = 0; i < row(); ++i)
             for (int j = 0; j < b.col(); ++j)
                 for (int k = 0; k < col(); ++k)
-                    c[i][j] += a[i][k] * b[k][j];
+                    (c[i][j] += a[i][k] * b[k][j]) %= mod;
 
         return c;
     }
